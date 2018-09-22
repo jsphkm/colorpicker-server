@@ -1,0 +1,11 @@
+language: node_js
+node_js: node
+services:
+- mongodb
+deploy:
+  provider: heroku
+  api_key:
+    secure: OdjS/tOHJ7KPR6xf9+FJbqHeHXPS3KFD4nrnuN8clz3W3Sj30UgCyaQmPKsjnapnKBmvfQY13f18yNq/UaMGicXchC5f8yfnjOvfMrDAKKUpdAvRsZzZkXYLvnjtZwZnqxNTaq6jyxU9nTwGcGTrS5sHgy+LX3TuXO48cjIcBxW5TNt8I7AWMACCqvwN94p1cOsoepxzigbzNsE+K4//l+GdTU+H3OhfiCn0ojCI3Ys1Up854QQbuymKUuzS0urh1FSUVA8ux5JMyMaWLEdVM9MAVCFuwZCjyrQAsLoXU1pxhxWSXLOZdI8n98T1yeOYhP55H/Lau7s63X5FFYGs97iDiZuKoh7+jZXC7TJ2i44CY3c8EidsASMgahSEoJs5LeTVN0j/TI/nZRQPHxACNMifty6+7slkIOfCtDtJ+Ex/uiCYn8BWndVtHvS24K5qaib78oWSkZDb8XiB9kB6kpqJU9hI7X6QSloXctMICh0PiWU18Lk1p9xaj457+E8oylDiVf8spcv0z6tOvEN1t1sgDGG9hrCMioqHHGb1BzatO/tG6T6LzALZ58iwuhhNsc8DMRUF8HNreUfUiYlFmmVxsE8c335qAGDxf6RzkkQVj6P8yvLH7nFecqt8EBHLd0JBjrYMgvVV/dDjR8X2Qqz1QVIE9+Kxjr5pxk9bSIs=
+  app: immense-sands-57699
+  on:
+    repo: jsphkm/colorpicker-server
