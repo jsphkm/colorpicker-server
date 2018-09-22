@@ -2,12 +2,12 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 
 const {app} = require('../server');
+const {TEST_DATABASE_URL} = require('../config');
 
 const should = chai.should();
 chai.use(chaiHttp);
 
 describe('API', function() {
-
   it('should 200 on GET requests', function() {
     return chai.request(app)
       .get('/api/fooooo')
