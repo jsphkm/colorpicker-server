@@ -1,20 +1,22 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors')
-const app = express();
+const cors = require('cors');
 const mongoose = require('mongoose');
 const passport = require('passport');
-
-const {CLIENT_ORIGIN, PORT, DATABASE_URL} = require('./config');
+const morgan = require('morgan');
 
 mongoose.Promise = global.Promise;
 
+const {CLIENT_ORIGIN, PORT, DATABASE_URL, TEST_DATABASE_URL} = require('./config');
 const {router: usersRouter} = require('./users');
 const {router: authRouter, localStrategy, jwtStrategy} = require('./auth');
 
+const app = express();
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 
+
+app.use(morgan('common'));
 app.use(cors({
   origin: CLIENT_ORIGIN
 }));
@@ -28,25 +30,34 @@ app.use('*', function(req, res){
 
 let server;
 
-function runServer(databaseUrl, port = PORT) {
-	return new Promise((resolve, reject) => {
-		mongoose.connect(databaseUrl, {useNewUrlParser: true}, err => {
-			if (err) {
-				return reject(err);
-			}
-			server = app.listen(port, () => {
-				console.log(`App listening on port ${port}`);
-				resolve();
-			})
-				.on('error', err => {
-					mongoose.disconnect();
-					reject(err);
-				});
-		});
-	});
+function startServer(testEnv) {
+  return new Promise((resolve, reject) => {
+    let databaseUrl;
+    if (testEnv) {
+      databaseUrl = TEST_DATABASE_URL;
+    }
+    else {
+      databaseUrl = DATABASE_URL;
+    }
+    mongoose.connect(databaseUrl, {useNewUrlParser: true, useCreateIndex: true}, err => {
+      if (err) {
+        return reject(err);
+      }
+      else {
+        server = app.listen(PORT, () => {
+          console.log(`Express server is listening on port ${PORT}`);
+          resolve();
+        })
+        .on('error', err => {
+          monoose.disconnect();
+          reject(err);
+        });
+      }
+    });
+  });
 }
 
-function closeServer() {
+function stopServer() {
   return mongoose.disconnect().then(() => {
     return new Promise((resolve, reject) => {
       console.log('Closing server');
@@ -54,13 +65,12 @@ function closeServer() {
         if (err) {
           return reject(err);
         }
-        resolve();
+        else {
+          resolve();
+        }
       });
     });
   });
 }
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-
-
-module.exports = {app, runServer, closeServer};
+module.exports = {app, startServer, stopServer};
