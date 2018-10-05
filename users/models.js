@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
+const Joi = require('joi');
 mongoose.Promise = global.Promise;
 
 const userSchema = mongoose.Schema({
@@ -14,18 +15,24 @@ userSchema.methods.serialize = function() {
 		id: this._id,
 		firstname: this.firstname || '',
 		lastname: this.lastname || '',
-		email: this.email || '',
-		password: this.password
+		email: this.email || ''
 	};
-};
-
-userSchema.methods.validatePassword = function(password) {
-	return bcrypt.compare(password, this.password);
 };
 
 userSchema.statics.hashPassword = function(password) {
 	return bcrypt.hash(password, 12);
 };
 
-const Users = mongoose.model('Users', userSchema);
-module.exports = {Users};
+userSchema.methods.validatePassword = function(password) {
+	return bcrypt.compare(password, this.password);
+};
+
+const userjoiSchema = Joi.object().keys({
+	firstname: Joi.string().min(1).trim().required(),
+	lastname: Joi.string().min(1).trim().required(),
+	email: Joi.string().email().trim().required(),
+	password: Joi.string().min(8).max(30).trim().required()
+});
+
+const Users = mongoose.model('User', userSchema);
+module.exports = {Users, userjoiSchema};

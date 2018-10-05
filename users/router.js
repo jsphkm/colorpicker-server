@@ -1,20 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const {Users} = require('./models');
-const passport = require('passport');
-
-const jwtAuth = passport.authenticate('jwt', { session: false });
-
+const {Users, userjoiSchema} = require('./models');
+const bodyParser = require('body-parser');
+const Joi = require('joi');
+router.use(bodyParser.json());
+const {jwtAuth} = require('../auth/strategies');
 
 router.get('/', jwtAuth, (req, res) => {
   if (req.user){
     Users
 		.findById(req.user.id)
-		.then(post => res.json(
+		.then(user => res.json(
       {
-        firstname: post.firstname,
-        lastname: post.lastname,
-        email: post.email
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email
       }
     ))
 		.catch(err => {
@@ -27,98 +27,19 @@ router.get('/', jwtAuth, (req, res) => {
   }
 })
 
-router.post('/', (req, res) => {
-	const requiredFields = ['firstname', 'lastname', 'email', 'password'];
-	const missingField = requiredFields.find(field => !(field in req.body));
-
-  if (missingField) {
-    console.log('before missing field')
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Missing field',
-      location: missingField
-    });
-	}
-	
-	const stringFields = ['firstName', 'lastName', 'email', 'password'];
-	const nonStringField = stringFields.find(field => 
-		field in req.body && typeof req.body[field] !== 'string'
-  );
-
-  if (nonStringField) {
-    console.log('before incorrect field');
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Incorrect field type: expected string',
-      location: nonStringField
-    });
+router.post('/', jwtAuth, (req, res) => {
+  console.log(req.body);
+  const newUser = {
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
+    email: req.body.email,
+    password: req.body.password
   }
-	
-	const explicityTrimmedFields = ['email', 'password'];
-  let nonTrimmedField = explicityTrimmedFields.find(
-    field => {
-      if (req.body[field].trim() !== req.body[field]) {
-        return field;
-      }
-    }
-  );
 
-  if (nonTrimmedField) {
-    console.log('before whitespace');
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: 'Cannot start or end with whitespace',
-      location: nonTrimmedField
-    });
-	}
-	
-	const sizedFields = {
-    firstname: {
-      min: 1
-		},
-		lastname: {
-			min: 1
-		},
-    password: {
-      min: 8,
-      max: 72
-    }
-  };
-  const tooSmallField = Object.keys(sizedFields).find(
-    field => {
-      if ('min' in sizedFields[field] && req.body[field].trim().length < sizedFields[field].min){
-        return field;
-      }
-    }
-  );
-  const tooLargeField = Object.keys(sizedFields).find(
-    field => {
-      if ('max' in sizedFields[field] && req.body[field].trim().length > sizedFields[field].max){
-        return field;
-      }
-    }
-	);
-	
-	if (tooSmallField || tooLargeField) {
-    console.log('before at least');
-    return res.status(422).json({
-      code: 422,
-      reason: 'ValidationError',
-      message: tooSmallField
-        ? `Must be at least ${sizedFields[tooSmallField]
-          .min} characters long`
-        : `Must be at most ${sizedFields[tooLargeField]
-          .max} characters long`,
-      location: tooSmallField || tooLargeField
-    });
-	}
-	
-	//let {email, password, firstname, lastname} = req.body;
-  // firstname = req.body.firstname.trim();
-	// lastname = req.body.lastname.trim();
+  const validation = Joi.validate(newUser, userjoiSchema);
+  if (validation.error) {
+    return res.status(422).json({error: validation.error});
+  }
 
   return Users
     .findOne({email: req.body.email})
@@ -143,8 +64,8 @@ router.post('/', (req, res) => {
         password: hash
       });
     })
-    .then(user => {
-      return res.status(201).json(user.serialize());
+    .then(createdUser => {
+      return res.status(201).json(createdUser.serialize());
     })
     .catch(err => {
       if (err.reason === 'ValidationError') {
@@ -154,7 +75,7 @@ router.post('/', (req, res) => {
     });
 });
 
-router.delete('/', (req, res) => {
+router.delete('/', jwtAuth, (req, res) => {
   if (req.user){
     Users
 		.findByIdAndRemove(req.user.id)
@@ -168,7 +89,7 @@ router.delete('/', (req, res) => {
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', jwtAuth, (req, res) => {
 	if (!(req.params.id && req.body.id && req.params.id === req.body.id)){
 		res.status(400).json({
 			error: 'Request path id and request body id values must match'

@@ -1,10 +1,10 @@
 const express = require('express');
-const passport = require('passport');
-const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-
+const bodyParser = require('body-parser');
 const config = require('../config');
 const router = express.Router();
+
+const {localAuth, jwtAuth} = require('./strategies');
 
 const createAuthToken = function(user) {
   return jwt.sign({user}, config.JWT_SECRET, {
@@ -14,18 +14,17 @@ const createAuthToken = function(user) {
   });
 };
 
-const localAuth = passport.authenticate('local', {session: false});
 router.use(bodyParser.json());
 router.post('/login', localAuth, (req, res) => {
-  const authToken = createAuthToken(req.user.serialize());
-  const userfirstname = req.user.firstname;
-  res.json({authToken, userfirstname});
+  const user = req.user.serialize();
+  const authToken = createAuthToken(user);
+  res.json({authToken, user});
 });
 
-const jwtAuth = passport.authenticate('jwt', {session: false});
 router.post('/refresh', jwtAuth, (req, res) => {
-  const authToken = createAuthToken(req.user);
-  res.json({authToken});
+  const user = req.user;
+  const authToken = createAuthToken(user);
+  res.json({authToken, user});
 });
 
 module.exports = {router};

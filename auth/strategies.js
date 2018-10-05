@@ -1,10 +1,16 @@
 const {Strategy: LocalStrategy} = require('passport-local');
 const {Strategy: JwtStrategy, ExtractJwt} = require('passport-jwt');
+const passport = require('passport');
 
 const {Users} = require('../users/models');
 const {JWT_SECRET} = require('../config');
 
-const localStrategy = new LocalStrategy((email, password, callback) => {
+const localStrategy = new LocalStrategy({
+  usernameField: 'email',
+  passwordField: 'password',
+  session: false
+  },
+  (email, password, callback) => {
   let user;
   Users.findOne({email: email})
     .then(_user => {
@@ -45,4 +51,7 @@ const jwtStrategy = new JwtStrategy(
   }
 );
 
-module.exports = {localStrategy, jwtStrategy};
+const localAuth = passport.authenticate('local', {session: false});
+const jwtAuth = passport.authenticate('jwt', {session: false});
+
+module.exports = {localStrategy, jwtStrategy, localAuth, jwtAuth};

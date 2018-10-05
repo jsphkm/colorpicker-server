@@ -10,23 +10,29 @@ mongoose.Promise = global.Promise;
 const {CLIENT_ORIGIN, PORT, DATABASE_URL, TEST_DATABASE_URL} = require('./config');
 const {router: usersRouter} = require('./users');
 const {router: authRouter, localStrategy, jwtStrategy} = require('./auth');
+const {router: palettesRouter} = require('./palettes');
 
 const app = express();
+app.use(express.json());
 passport.use(localStrategy);
 passport.use(jwtStrategy);
+app.options('*', cors());
 
 
-app.use(morgan('common'));
-app.use(cors({
-  origin: CLIENT_ORIGIN
-}));
+app.use(morgan('dev'));
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 app.use('/api/users', usersRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/palettes', palettesRouter);
 
 app.use('*', function(req, res){
-	res.status(404).json({message: 'Not Found'});
-})
+	res.status(404).json({error: 'Not Found'});
+});
 
 let server;
 
@@ -41,6 +47,7 @@ function startServer(testEnv) {
     }
     mongoose.connect(databaseUrl, {useNewUrlParser: true, useCreateIndex: true}, err => {
       if (err) {
+        console.error(err);
         return reject(err);
       }
       else {
@@ -66,6 +73,7 @@ function stopServer() {
           return reject(err);
         }
         else {
+          console.log('Express server shut down');
           resolve();
         }
       });
