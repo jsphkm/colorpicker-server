@@ -7,6 +7,23 @@ const {jwtAuth} = require('../auth/strategies');
 
 router.use(bodyParser.json());
 
+router.get('/:id', jwtAuth, (req, res) => {
+  if (req.user){
+    Palettes
+    .findById(req.params.id)
+		.then(palette => {
+      return res.status(200).json(palette.serialize());
+    })
+		.catch(err => {
+			console.error(err);
+			return res.status(500).json({ error: 'Internal server error'});
+		})
+  }
+  else {
+    return res.status(403).end();
+  }
+})
+
 router.get('/', jwtAuth, (req, res) => {
   if (req.user){
     Palettes
@@ -16,15 +33,16 @@ router.get('/', jwtAuth, (req, res) => {
     })
 		.catch(err => {
 			console.error(err);
-			res.status(500).json({ error: 'Internal server error'});
+			return res.status(500).json({ error: 'Internal server error'});
 		})
   }
   else {
-    res.status(403);
+    return res.status(403).end();
   }
 })
 
 router.post('/', jwtAuth, (req, res) => {
+  console.log(req.body.colors);
   if (req.user) {
     Palettes
     .create({
@@ -36,11 +54,11 @@ router.post('/', jwtAuth, (req, res) => {
     })
     .catch(err => {
       console.error(err);
-      res.status(500).json({error: 'Internal server error'});
+      return res.status(500).json({error: 'Internal server error'});
     })
   }
   else {
-    res.status(403);
+    return res.status(403).end();
   }
 });
 
@@ -65,7 +83,7 @@ router.delete('/:id', jwtAuth, (req, res) => {
     })
     .catch(err => {
       console.error(err);
-      res.status(500).json({error: 'Internal Server Error'});
+      return res.status(500).json({error: 'Internal Server Error'});
     });
   }
 });
