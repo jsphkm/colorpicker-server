@@ -27,7 +27,8 @@ router.get('/:id', jwtAuth, (req, res) => {
 router.get('/', jwtAuth, (req, res) => {
   if (req.user){
     Palettes
-		.find({user_id: req.user.id})
+    .find({user_id: req.user.id})
+    .sort({updatedDate: 'desc'})
 		.then(palettes => {
       return res.status(200).json(palettes.map(palette => palette.serialize()));
     })
