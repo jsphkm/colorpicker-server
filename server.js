@@ -14,6 +14,7 @@ const {router: palettesRouter} = require('./palettes');
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 passport.use(localStrategy);
 passport.use(jwtStrategy);
 app.options('*', cors());
