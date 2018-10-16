@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const {Palettes} = require('./models');
 const bodyParser = require('body-parser');
-const Joi = require('joi');
 const {jwtAuth} = require('../auth/strategies');
 
 router.use(bodyParser.json());
@@ -43,7 +42,6 @@ router.get('/', jwtAuth, (req, res) => {
 })
 
 router.post('/', jwtAuth, (req, res) => {
-  console.log(req.body.colors);
   if (req.user) {
     Palettes
     .create({

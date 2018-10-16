@@ -11,7 +11,7 @@ chai.use(chaiHttp);
 
 function seedUserData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker) {
   return Users.hashPassword(passwordfaker)
-    .then(hash => {
+    .then(function(hash) {
       return Users.create({
         firstname: firstnamefaker,
         lastname: lastnamefaker,
@@ -38,11 +38,10 @@ describe('Integration tests for /api/users', function() {
   afterEach(function() {
     return new Promise((resolve, reject) => {
       mongoose.connection.dropDatabase()
-        .then(result => {
+        .then(function(result) {
           resolve(result);
         })
-        .catch(err => {
-          console.error(err);
+        .catch(function(err) {
           reject(err);
         });
     });
@@ -133,6 +132,7 @@ describe('Integration tests for /api/users', function() {
         expect(res.body.location).to.equal('email');
       });
     });
+
     it('Should create a new user', function() {
       const newemail = faker.internet.email();
       const newpassword = faker.internet.password();

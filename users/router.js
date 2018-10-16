@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const {Users, userjoiSchema} = require('./models');
+const {Users} = require('./models');
 const bodyParser = require('body-parser');
-const Joi = require('joi');
 router.use(bodyParser.json());
 const {jwtAuth} = require('../auth/strategies');
 
@@ -18,7 +17,6 @@ router.get('/', jwtAuth, (req, res) => {
       }
     ))
 		.catch(err => {
-			console.error(err);
 			res.status(500).json({ error: 'Internal server error'});
 		})
   }
@@ -28,16 +26,57 @@ router.get('/', jwtAuth, (req, res) => {
 })
 
 router.post('/', (req, res) => {
-  const newUser = {
-    firstname: req.body.firstname,
-    lastname: req.body.lastname,
-    email: req.body.email,
-    password: req.body.password
+  const fields = ['firstname', 'lastname', 'email', 'password'];
+  const missingField = fields.find(field => !(field in req.body));
+  if (missingField) {
+    return res.status(422).json({
+      code: 422, reason: 'ValidationError',
+      message: 'Missing field', location: missingField
+    });
+  };
+  const nonStringField = fields.find(field =>
+    field in req.body && typeof req.body[field] !== 'string'
+    );
+  if (nonStringField) {
+    return res.status(422).json({
+      code: 422, reason: 'ValidationError',
+      message: 'Incorrect field type: expected string', location: nonStringField
+    });
+  };
+  const nonTrimmedFields = fields.find(field => {
+    if(req.body[field].trim() !== req.body[field]) {
+      return field;
+    };
+  });
+  if (nonTrimmedFields) {
+    return res.status(422).json({
+      code: 422, reason: 'ValidationError',
+      message: 'Cannot start or end with whitespace', location: nonTrimmedFields
+    });
+  };
+  const fieldlens = {
+    firstname: {min: 1},
+    lastname: {min: 1},
+    email: {min: 1},
+    password: {min: 8, max: 72}
   }
-
-  const validation = Joi.validate(newUser, userjoiSchema);
-  if (validation.error) {
-    return res.status(422).json({error: validation.error});
+  const tooshort = Object.keys(fieldlens).find(field => {
+    if ('min' in fieldlens[field] && req.body[field].trim().length < fieldlens[field].min) {
+      return field;
+    }
+  });
+  const toolong = Object.keys(fieldlens).find(field => {
+    if ('max' in fieldlens[field] && req.body[field].trim().length > fieldlens[field].max) {
+      return field;
+    }
+  });
+  if (tooshort || toolong) {
+    return res.status(422).json({
+      code: 422, reason: 'ValidationError',
+      message: tooshort ? `Must be at least ${fieldlens[tooshort].min} characters long`
+      : `Must be at most ${fieldlens[toolong].max} characters long`,
+      location: tooshort || toolong
+    });
   }
 
   return Users

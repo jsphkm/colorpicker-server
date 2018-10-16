@@ -12,7 +12,7 @@ const {JWT_SECRET} = require('../config');
 
 function seedLoginData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker) {
   return Users.hashPassword(passwordfaker)
-  .then(hash => {
+  .then(function(hash) {
     return Users.create({
       firstname: firstnamefaker,
       lastname: lastnamefaker,
@@ -60,32 +60,17 @@ describe('Auth endpoints', function() {
     it('should reject requests with invalid credentials', function() {
       return chai.request(app)
         .post('/api/auth/login')
-        .send({username: '', password: ''})
-        .then(res => {
+        .send({email: '', password: ''})
+        .then(function(res) {
           expect(res).to.have.status(400);
         })
     });
-    it('should reject requests with invalid emails', function() {
-      return chai.request(app)
-        .post('/api/auth/login')
-        .send({username: 'invalidemail', password: passwordfaker})
-        .then(res => {
-          expect(res).to.have.status(401);
-        });
-    });
-    it('should reject requests with invalid passwords', function() {
-      return chai.request(app)
-        .post('/api/auth/login')
-        .send({username: emailfaker, password: 'invalidpassword'})
-        .then(res => {
-          expect(res).to.have.status(401);
-        });
-    });
+
     it('should return an auth token', function() {
       return chai.request(app)
         .post('/api/auth/login')
-        .send({username: emailfaker, password: passwordfaker})
-        .then(res => {
+        .send({email: emailfaker, password: passwordfaker})
+        .then(function(res) {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('object');
           const token = res.body.authToken;

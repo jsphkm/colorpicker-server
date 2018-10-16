@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Joi = require('joi');
 
 const palettesSchema = new mongoose.Schema({
   updatedDate: {type: Date, default: Date.now},
