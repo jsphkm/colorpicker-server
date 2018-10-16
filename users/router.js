@@ -27,8 +27,7 @@ router.get('/', jwtAuth, (req, res) => {
   }
 })
 
-router.post('/', jwtAuth, (req, res) => {
-  console.log(req.body);
+router.post('/', (req, res) => {
   const newUser = {
     firstname: req.body.firstname,
     lastname: req.body.lastname,
@@ -45,7 +44,6 @@ router.post('/', jwtAuth, (req, res) => {
     .findOne({email: req.body.email})
     .then(count => {
       if (count) {
-        console.log('before duplicate');
         return Promise.reject({
           code: 422,
           reason: 'ValidationError',
@@ -56,7 +54,6 @@ router.post('/', jwtAuth, (req, res) => {
       return Users.hashPassword(req.body.password);
     })
     .then(hash => {
-      console.log('before create');
       return Users.create({
 				firstname: req.body.firstname.trim(),
 				lastname: req.body.lastname.trim(),
@@ -83,7 +80,6 @@ router.delete('/', jwtAuth, (req, res) => {
 			res.status(204).json({message: 'success'});
 		})
 		.catch(err => {
-			console.error(err);
 			res.status(500).json({error: 'Internal Server Error'});
 		});
   }
