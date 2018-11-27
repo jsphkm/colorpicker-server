@@ -3,24 +3,23 @@ const chaiHttp = require('chai-http');
 const jwt = require('jsonwebtoken');
 const faker = require('faker');
 const mongoose = require('mongoose');
-
-const { expect } = chai;
+const expect = chai.expect;
 chai.use(chaiHttp);
 
-const { Users } = require('../users/models');
-const { app, startServer, stopServer } = require('../server');
-const { JWT_SECRET } = require('../config');
+const {Users} = require('../users/models');
+const {app, startServer, stopServer} = require('../server');
+const {JWT_SECRET} = require('../config');
 
 function seedLoginData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker) {
   return Users.hashPassword(passwordfaker)
-    .then((hash) => {
-      return Users.create({
-        firstname: firstnamefaker,
-        lastname: lastnamefaker,
-        email: emailfaker,
-        password: hash,
-      });
+  .then(function(hash) {
+    return Users.create({
+      firstname: firstnamefaker,
+      lastname: lastnamefaker,
+      email: emailfaker,
+      password: hash
     });
+  })
 }
 
 function generateLoginData() {
@@ -28,7 +27,7 @@ function generateLoginData() {
     firstnamefaker: faker.name.firstName(),
     lastnamefaker: faker.name.lastName(),
     emailfaker: faker.internet.email(),
-    passwordfaker: faker.internet.password(),
+    passwordfaker: faker.internet.password()
   };
 }
 
@@ -37,27 +36,28 @@ function tearDownDb() {
   return mongoose.connection.dropDatabase();
 }
 
-describe('Auth endpoints', () => {
-  const { firstnamefaker, lastnamefaker, emailfaker, passwordfaker } = generateLoginData();
 
-  before(function () {
+describe('Auth endpoints', function() {
+  const {firstnamefaker, lastnamefaker, emailfaker, passwordfaker} = generateLoginData();
+
+  before(function() {
     return startServer(true);
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     return seedLoginData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker);
   });
 
-  afterEach(function () {
+  afterEach(function() {
     return tearDownDb();
   });
 
-  after(function () {
+  after(function() {
     return stopServer();
   });
 
-  describe('/api/auth/login', function () {
-    it('should reject requests with invalid credentials', function () {
+  describe('/api/auth/login', function() {
+    it('should reject requests with invalid credentials', function() {
       return chai.request(app)
         .post('/api/auth/login')
         .send({email: '', password: ''})
@@ -66,11 +66,11 @@ describe('Auth endpoints', () => {
         })
     });
 
-    it('should return an auth token', function () {
+    it('should return an auth token', function() {
       return chai.request(app)
         .post('/api/auth/login')
         .send({email: emailfaker, password: passwordfaker})
-        .then(function (res) {
+        .then(function(res) {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an('object');
           const token = res.body.authToken;
@@ -81,4 +81,4 @@ describe('Auth endpoints', () => {
         })
     })
   })
-});
+})
