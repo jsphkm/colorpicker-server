@@ -1,4 +1,4 @@
-const {Palettes} = require('./models');
-const {router} = require('./router');
+const { Palettes } = require('./models');
+const { router } = require('./router');
 
-module.exports = {Palettes, router};
+module.exports = { Palettes, router };

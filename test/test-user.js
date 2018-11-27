@@ -3,15 +3,15 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const faker = require('faker');
 
-const {startServer, stopServer, app} = require('../server');
-const {Users} = require('../users/models');
+const { startServer, stopServer, app } = require('../server');
+const { Users } = require('../users/models');
 
-const expect = chai.expect;
+const { expect } = chai;
 chai.use(chaiHttp);
 
 function seedUserData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker) {
   return Users.hashPassword(passwordfaker)
-    .then(function(hash) {
+    .then(function (hash) {
       return Users.create({
         firstname: firstnamefaker,
         lastname: lastnamefaker,
@@ -21,38 +21,38 @@ function seedUserData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker) 
     });
 };
 
-describe('Integration tests for /api/users', function() {
+describe('Integration tests for /api/users', function () {
   const emailfaker = faker.internet.email();
   const passwordfaker = faker.internet.password();
   const firstnamefaker = faker.name.firstName();
   const lastnamefaker = faker.name.lastName();
 
-  before(function() {
+  before(function () {
     return startServer(true);
   });
 
-  beforeEach(function() {
+  beforeEach(function () {
     return seedUserData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker);
   });
 
-  afterEach(function() {
+  afterEach(function () {
     return new Promise((resolve, reject) => {
       mongoose.connection.dropDatabase()
-        .then(function(result) {
+        .then(function (result) {
           resolve(result);
         })
-        .catch(function(err) {
+        .catch(function (err) {
           reject(err);
         });
     });
   });
 
-  after(function() {
+  after(function () {
     return stopServer();
   });
 
-  describe('POST', function() {
-    it('Should reject user with missing fields', function() {
+  describe('POST', function () {
+    it('Should reject user with missing fields', function () {
       return chai.request(app)
       .post('/api/users')
       .type('json')
@@ -68,7 +68,7 @@ describe('Integration tests for /api/users', function() {
         expect(res.body.location).to.equal('password');
       })
     });
-    it('Should reject non-string fields', function() {
+    it('Should reject non-string fields', function () {
       return chai.request(app)
       .post('/api/users')
       .send({
@@ -84,7 +84,7 @@ describe('Integration tests for /api/users', function() {
         expect(res.body.location).to.equal('email');
       })
     });
-    it('Should reject white-space starting & ending fields', function() {
+    it('Should reject white-space starting & ending fields', function () {
       return chai.request(app)
       .post('/api/users')
       .send({
@@ -100,7 +100,7 @@ describe('Integration tests for /api/users', function() {
         expect(res.body.location).to.equal('password');
       });
     });
-    it('Should reject fields with less than required characters', function() {
+    it('Should reject fields with less than required characters', function () {
       return chai.request(app)
       .post('/api/users')
       .send({
@@ -116,7 +116,7 @@ describe('Integration tests for /api/users', function() {
         expect(res.body.location).to.equal('password');
       });
     });
-    it('Should reject duplicate email', function() {
+    it('Should reject duplicate email', function () {
       return chai.request(app)
       .post('/api/users')
       .send({
@@ -133,7 +133,7 @@ describe('Integration tests for /api/users', function() {
       });
     });
 
-    it('Should create a new user', function() {
+    it('Should create a new user', function () {
       const newemail = faker.internet.email();
       const newpassword = faker.internet.password();
       const newfirstname = faker.name.firstName();

@@ -7,10 +7,10 @@ const morgan = require('morgan');
 
 mongoose.Promise = global.Promise;
 
-const {CLIENT_ORIGIN, PORT, DATABASE_URL, TEST_DATABASE_URL} = require('./config');
-const {router: usersRouter} = require('./users');
-const {router: authRouter, localStrategy, jwtStrategy} = require('./auth');
-const {router: palettesRouter} = require('./palettes');
+const { CLIENT_ORIGIN, PORT, DATABASE_URL, TEST_DATABASE_URL } = require('./config');
+const { router: usersRouter } = require('./users');
+const { router: authRouter, localStrategy, jwtStrategy } = require('./auth');
+const { router: palettesRouter } = require('./palettes');
 
 const app = express();
 app.use(express.json());
