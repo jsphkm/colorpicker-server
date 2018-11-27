@@ -6,7 +6,7 @@ const faker = require('faker');
 const { startServer, stopServer, app } = require('../server');
 const { Users } = require('../users/models');
 
-const { expect } = chai;
+const expect = chai.expect;
 chai.use(chaiHttp);
 
 function seedUserData(firstnamefaker, lastnamefaker, emailfaker, passwordfaker) {
